@@ -1,9 +1,9 @@
 {
-  "source": "toybird-apps-site_with_qbr_survival_added",
+  "source": "toybird-apps-site_with_qbr_survival_and_koesub_added",
   "app_ads_lines": [
     "google.com, pub-6129814643212445, DIRECT, f08c47fec0942fa0"
   ],
-  "relative_links_checked": 938,
+  "relative_links_checked": 1013,
   "broken_relative_links": [],
   "screenshot_ledger_pages": [
     "apps/screenshot-ledger/index.html",
@@ -49,6 +49,9 @@
     "apps/find-it-show-it/ja/support.html",
     "apps/find-it-show-it/privacy.html",
     "apps/find-it-show-it/support.html",
+    "apps/koesub/index.html",
+    "apps/koesub/privacy.html",
+    "apps/koesub/support.html",
     "apps/meet-here-card/index.html",
     "apps/meet-here-card/ja/index.html",
     "apps/meet-here-card/ja/privacy.html",
@@ -128,5 +131,11 @@
     "apps/qbr-survival/support.html"
   ],
   "qbr_survival_icon": "assets/qbr-survival-icon.png",
-  "qbr_survival_hero": "assets/qbr-survival-hero.png"
+  "qbr_survival_hero": "assets/qbr-survival-hero.png",
+  "koesub_pages": [
+    "apps/koesub/index.html",
+    "apps/koesub/privacy.html",
+    "apps/koesub/support.html"
+  ],
+  "koesub_icon": "assets/logo.svg"
 }
