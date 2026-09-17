@@ -1,0 +1,132 @@
+name: Canonicalize legacy GitHub Pages URLs
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/add-labs-canonical.yml
+
+permissions:
+  contents: write
+
+jobs:
+  canonicalize:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Add labs.toybird.com canonical URLs
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          import sys
+
+          root = Path('.')
+          changed = []
+          skipped_verification = []
+          errors = []
+
+          def canonical_for(path: Path) -> str:
+              rel = path.as_posix()
+              if rel == 'index.html':
+                  return 'https://labs.toybird.com/'
+              if rel.endswith('/index.html'):
+                  rel = rel[:-len('index.html')]
+              return 'https://labs.toybird.com/' + rel
+
+          canonical_re = re.compile(
+              r'<link\s+[^>]*rel=["\']canonical["\'][^>]*>',
+              re.IGNORECASE,
+          )
+
+          for path in sorted(root.rglob('*.html')):
+              rel = path.as_posix()
+              if path.parent == root and re.fullmatch(r'google[^/]*\.html', path.name, re.IGNORECASE):
+                  skipped_verification.append(rel)
+                  continue
+
+              text = path.read_text(encoding='utf-8')
+              if '<head' not in text.lower() or '</head>' not in text.lower():
+                  errors.append(f'{rel}: missing <head> or </head>')
+                  continue
+
+              canonical = canonical_for(path)
+              tag = f'<link rel="canonical" href="{canonical}">'
+
+              matches = list(canonical_re.finditer(text))
+              if len(matches) > 1:
+                  errors.append(f'{rel}: multiple canonical tags found')
+                  continue
+
+              if matches:
+                  new_text = canonical_re.sub(tag, text, count=1)
+              else:
+                  new_text = re.sub(
+                      r'</head>',
+                      f'  {tag}\n</head>',
+                      text,
+                      count=1,
+                      flags=re.IGNORECASE,
+                  )
+
+              if new_text != text:
+                  path.write_text(new_text, encoding='utf-8')
+                  changed.append((rel, canonical))
+
+          if errors:
+              print('ERRORS:')
+              for item in errors:
+                  print(' -', item)
+              sys.exit(1)
+
+          print(f'Changed HTML files: {len(changed)}')
+          for rel, canonical in changed:
+              print(f' - {rel} -> {canonical}')
+          print(f'Skipped verification files: {len(skipped_verification)}')
+          for rel in skipped_verification:
+              print(f' - {rel}')
+          PY
+
+      - name: Validate canonical coverage
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          import sys
+
+          failures = []
+          for path in sorted(Path('.').rglob('*.html')):
+              if path.parent == Path('.') and re.fullmatch(r'google[^/]*\.html', path.name, re.IGNORECASE):
+                  continue
+              rel = path.as_posix()
+              expected_path = '' if rel == 'index.html' else (rel[:-len('index.html')] if rel.endswith('/index.html') else rel)
+              expected = 'https://labs.toybird.com/' + expected_path
+              text = path.read_text(encoding='utf-8')
+              tags = re.findall(r'<link\s+[^>]*rel=["\']canonical["\'][^>]*>', text, re.IGNORECASE)
+              if len(tags) != 1 or expected not in tags[0]:
+                  failures.append(f'{rel}: expected exactly one canonical to {expected}; found {tags}')
+
+          if failures:
+              print('\n'.join(failures))
+              sys.exit(1)
+          print('Canonical validation passed for all content HTML files.')
+          PY
+
+      - name: Commit canonical updates
+        shell: bash
+        run: |
+          if git diff --quiet; then
+            echo "No HTML changes were needed."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -- '*.html'
+          git commit -m "SEO: canonicalize legacy GitHub Pages URLs to labs.toybird.com"
+          git push origin HEAD:main
