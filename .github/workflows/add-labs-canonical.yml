@@ -1,3 +1,4 @@
+# one-time migration trigger
 name: Canonicalize legacy GitHub Pages URLs
 
 on:
