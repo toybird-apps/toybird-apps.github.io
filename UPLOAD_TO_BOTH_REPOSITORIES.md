@@ -1,3 +1,5 @@
+> **2026-10-08 / Legacy mirror:** This repository now redirects its HTML pages to `https://labs.toybird.com/`. Do **not** copy product/support/privacy HTML from the current labs repository into this legacy repository. Update product content only in `toybird-apps/toybird-apps-site`. Keep `app-ads.txt` and ownership verification files here for compatibility.
+
 # ToyBird Apps GitHub Pages 共通アップロード用パッケージ
 
 このZIPの中身を、以下の2つのGitHubリポジトリのルートへ同じようにアップロードしてください。

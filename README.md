@@ -1,3 +1,5 @@
+> **Legacy GitHub Pages host (2026-10-08):** All app and index HTML URLs are now immediate redirects to the canonical `https://labs.toybird.com/` equivalents. Do not upload the same product HTML into this repository. Keep compatibility files, including `app-ads.txt`, intact.
+
 # Toybird Apps Site
 
 GitHub Pages website for Toybird Apps.
